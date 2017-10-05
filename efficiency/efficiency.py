@@ -21,8 +21,33 @@ def create_corpus_callosum():
     # JHU DTI-based white-matter atlases
     JHU = '/usr/share/fsl/5.0/data/atlases/JHU/JHU-ICBM-labels-1mm.nii.gz'
 
-    atlas = nib.load(JHU)
-    atlas_data = atlas.get_data()
+    JHU_img = nib.load(JHU)
+    atlas_data = JHU_img.get_data()
+    corpus_callosum_data = np.zeros((atlas_data.shape))
+
+    # Genu of Corpus Callosum
+    corpus_callosum_data[np.where(atlas_data == 3)] = 1
+    # Body of Corpus Callosum
+    corpus_callosum_data[np.where(atlas_data == 4)] = 1
+    # Splenium of Corpus Callosum
+    corpus_callosum_data[np.where(atlas_data == 5)] = 1
+
+    corpus_callosum_img = nib.Nifti1Image(corpus_callosum_data,
+                                          affine=JHU_img.affine)
+
+    nib.save(corpus_callosum_img, opj(CWD,
+                                      'data',
+                                      'corpus_callosum_1mm.nii.gz'))
+
+
+def create_corpus_callosum_plane():
+    # mid-sagital plane
+
+    # JHU DTI-based white-matter atlases
+    corpus_callosum =  opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz')
+
+    corpus_callosum_img = nib.load(corpus_callosum)
+    corpus_callosum_data = atlas.get_data()
     corpus_callosum_data = np.zeros((atlas_data.shape))
 
     # Genu of Corpus Callosum
@@ -35,7 +60,7 @@ def create_corpus_callosum():
     corpus_callosum = nib.Nifti1Image(corpus_callosum_data,
                                       affine=atlas.affine)
 
-    nib.save(corpus_callosum, opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz'))
+    nib.save(corpus_callosum, opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz'))    
 
 
 
