@@ -42,25 +42,26 @@ def create_corpus_callosum():
 
 def create_corpus_callosum_plane():
     # mid-sagital plane
-
+    from nilearn.plotting import plot_glass_brain
     # JHU DTI-based white-matter atlases
-    corpus_callosum =  opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz')
+    corpus_callosum = opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz')
 
     corpus_callosum_img = nib.load(corpus_callosum)
-    corpus_callosum_data = atlas.get_data()
-    corpus_callosum_data = np.zeros((atlas_data.shape))
+    corpus_callosum_data = corpus_callosum_img.get_data()
+    corpus_callosum_med_sag_plane = np.zeros((corpus_callosum_data.shape))
 
+    # mid plane-1 to fit with MNI(x)=0
+    mid_sag_plane = (corpus_callosum_data.shape[0]//2)-1
     # Genu of Corpus Callosum
-    corpus_callosum_data[np.where(atlas_data == 3)] = 1
-    # Body of Corpus Callosum
-    corpus_callosum_data[np.where(atlas_data == 4)] = 1
-    # Splenium of Corpus Callosum
-    corpus_callosum_data[np.where(atlas_data == 5)] = 1
+    corpus_callosum_med_sag_plane[mid_sag_plane,:,:] = corpus_callosum_data[mid_sag_plane,:,:]
 
-    corpus_callosum = nib.Nifti1Image(corpus_callosum_data,
-                                      affine=atlas.affine)
+    corpus_callosum_med_sag_plane_img = nib.Nifti1Image(corpus_callosum_med_sag_plane,
+                                                        affine=corpus_callosum_img.affine)
 
-    nib.save(corpus_callosum, opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz'))    
+    plot_glass_brain(corpus_callosum_med_sag_plane_img)
+    nib.save(corpus_callosum_med_sag_plane_img, opj(CWD,
+                                                    'data',
+                                                    'corpus_callosum_med_sag_plane_1mm.nii.gz'))    
 
 
 
