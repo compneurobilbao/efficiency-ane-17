@@ -6,7 +6,11 @@ import nibabel as nib
 import numpy as np
 import os
 from os.path import join as opj
-import subprocess
+
+from efficiency.utils import (execute,
+                              closest_node,
+                              bresenhamline,
+                              )
 
 CWD = os.getcwd()
 """
@@ -63,51 +67,23 @@ def create_corpus_callosum_plane():
                                                     'corpus_callosum_med_sag_plane_1mm.nii.gz'))    
 
 
-
-def create_skeleton_atlas():
-    # Just area/surface that actually can be passed trough
-    # TODO: This is more difficult than I though
-    
-    # For each point of the MNI atlas mask, calculate the min distance to 
-    # CC_med_sag_plane. Create a line of points between the points and check 
-    # for points that in CC x,y,z boundaries, fall out of CC.
-
-
-
-from scipy.spatial.distance import cdist
-
-def closest_node(node, nodes):
-    return nodes[cdist([node], nodes).argmin()]
-
 """
 2: Transform the CC mask to subjects DWI space
 """
 
 
-def execute(cmd):
-    popen = subprocess.Popen(cmd,
-                             stdout=subprocess.PIPE,
-                             universal_newlines=True)
-    for stdout_line in iter(popen.stdout.readline, ""):
-        yield stdout_line
-    popen.stdout.close()
-    return_code = popen.wait()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, cmd)
-
-
 def transform_mask_to_subject_space(mask_path=MASK_PATH,
                                     t1_atlas_path=MNI_1MM_PATH,
-                                    dwi_subject_path)
+                                    dwi_subject_path):
 
     import tempfile
-    
+
     # review this naming:
     mask_dwi_path = dwi_subject_path[:-7]
-    
+
     if os.path.exists(mask_dwi_path):
         return
-    
+
     omat = tempfile.mkstemp()
 
     if not os.path.exists(omat):
@@ -137,17 +113,19 @@ def transform_mask_to_subject_space(mask_path=MASK_PATH,
         print(output)
 
 
-
-
-
-
-
 """
-3: Calculate the most efficient path between 2 given points in the space 
+3: Calculate the most efficient path between 2 given points in the space
 crossing CC mask
 """
 
 
+def create_skeleton_atlas():
+    # Just area/surface that actually can be passed trough
+    # TODO: This is more difficult than I though
+    
+    # For each point of the MNI atlas mask, calculate the min distance to 
+    # CC_med_sag_plane. Create a line of points between the points and check 
+    # for points that in CC x,y,z boundaries, fall out of CC.
 
 
 

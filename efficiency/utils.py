@@ -21,10 +21,6 @@ def closest_node(node, nodes):
     return nodes[cdist([node], nodes).argmin()]
 
 
-
-
-
-
 """
 N-D Bresenham line algo (from: http://code.activestate.com/recipes/
 578112-bresenhams-line-algorithm-in-n-dimensions/)
@@ -113,26 +109,16 @@ def bresenhamline(start, end, max_iter=-1):
         linevox (n x dimension) A cumulative array of all points traversed by
         all the lines so far.
 
-    >>> s = np.array([[3, 1, 9, 0],[0, 0, 3, 0]])
-    >>> bresenhamline(s, np.zeros(s.shape[1]), max_iter=-1)
-    array([[ 3,  1,  8,  0],
-           [ 2,  1,  7,  0],
-           [ 2,  1,  6,  0],
-           [ 2,  1,  5,  0],
-           [ 1,  0,  4,  0],
-           [ 1,  0,  3,  0],
-           [ 1,  0,  2,  0],
-           [ 0,  0,  1,  0],
-           [ 0,  0,  0,  0],
-           [ 0,  0,  2,  0],
-           [ 0,  0,  1,  0],
-           [ 0,  0,  0,  0],
-           [ 0,  0, -1,  0],
-           [ 0,  0, -2,  0],
-           [ 0,  0, -3,  0],
-           [ 0,  0, -4,  0],
-           [ 0,  0, -5,  0],
-           [ 0,  0, -6,  0]])
+    >>> s = np.array([[10, -6, 3]])
+    >>> a = np.array([[3, 1, 9]])
+    >>> bresenhamline(s, a)
+    array([[ 9, -5,  4],
+       [ 8, -4,  5],
+       [ 7, -3,  6],
+       [ 6, -2,  6],
+       [ 5, -1,  7],
+       [ 4,  0,  8],
+       [ 3,  1,  9]])
     """
     # Return the points as a single array
     return _bresenhamlines(start, end, max_iter).reshape(-1, start.shape[-1])
