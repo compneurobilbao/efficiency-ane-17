@@ -66,11 +66,18 @@ def create_corpus_callosum_plane():
 
 def create_skeleton_atlas():
     # Just area/surface that actually can be passed trough
-    
     # TODO: This is more difficult than I though
+    
+    # For each point of the MNI atlas mask, calculate the min distance to 
+    # CC_med_sag_plane. Create a line of points between the points and check 
+    # for points that in CC x,y,z boundaries, fall out of CC.
 
 
 
+from scipy.spatial.distance import cdist
+
+def closest_node(node, nodes):
+    return nodes[cdist([node], nodes).argmin()]
 
 """
 2: Transform the CC mask to subjects DWI space
