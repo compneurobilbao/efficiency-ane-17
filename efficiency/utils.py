@@ -18,6 +18,18 @@ def execute(cmd):
 
 
 def closest_node(node, nodes):
+    """
+    >>> a = np.array([-5, -8, -3])
+    >>> b = np.array([[ 9, -5,  4],
+       [ 8, -4,  5],
+       [ 7, -3,  6],
+       [ 6, -2,  6],
+       [ 5, -1,  7],
+       [ 4,  0,  8],
+       [ 3,  1,  9]])
+    >>> closest_node(a, b)
+    array([ 6, -2,  6])
+    """
     return nodes[cdist([node], nodes).argmin()]
 
 

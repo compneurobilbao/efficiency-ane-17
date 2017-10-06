@@ -45,9 +45,8 @@ def create_corpus_callosum():
 
 
 def create_corpus_callosum_plane():
-    # mid-sagital plane
-    from nilearn.plotting import plot_glass_brain
-    # JHU DTI-based white-matter atlases
+    
+    # Full CC
     corpus_callosum = opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz')
 
     corpus_callosum_img = nib.load(corpus_callosum)
@@ -66,6 +65,29 @@ def create_corpus_callosum_plane():
                                                     'data',
                                                     'corpus_callosum_med_sag_plane_1mm.nii.gz'))    
 
+# discuss if we need this or not:
+
+#def create_not_corpus_callosum_vol():
+#    
+#    # Full CC
+#    corpus_callosum = opj(CWD, 'data', 'corpus_callosum_1mm.nii.gz')
+#
+#    corpus_callosum_img = nib.load(corpus_callosum)
+#    corpus_callosum_data = corpus_callosum_img.get_data()
+#
+#    MNI_brain = '/usr/share/fsl/5.0/data/standard/MNI152_T1_1mm_brain_mask.nii.gz'  
+#    MNI_brain_data = nib.load(MNI_brain).get_data()
+#    
+#    not_corpus_callosum = MNI_brain_data - 
+#
+#    corpus_callosum_med_sag_plane[mid_sag_plane,:,:] = corpus_callosum_data[mid_sag_plane,:,:]
+#
+#    corpus_callosum_med_sag_plane_img = nib.Nifti1Image(corpus_callosum_med_sag_plane,
+#                                                        affine=corpus_callosum_img.affine)
+#
+#    nib.save(corpus_callosum_med_sag_plane_img, opj(CWD,
+#                                                    'data',
+#                                                    'corpus_callosum_med_sag_plane_1mm.nii.gz'))   
 
 """
 2: Transform the CC mask to subjects DWI space
@@ -123,11 +145,62 @@ def create_skeleton_atlas():
     # Just area/surface that actually can be passed trough
     # TODO: This is more difficult than I though
     
+    # This would be faster if we only had a mask of outer brain voxels
+    
     # For each point of the MNI atlas mask, calculate the min distance to 
     # CC_med_sag_plane. Create a line of points between the points and check 
     # for points that in CC x,y,z boundaries, fall out of CC.
 
 
+    # JHU DTI-based white-matter atlases
+    MNI_brain = '/usr/share/fsl/5.0/data/standard/MNI152_T1_1mm_brain_mask.nii.gz'
+    corpus_callosum =  opj(CWD,
+                           'data',
+                           'corpus_callosum_1mm.nii.gz')
+    corpus_callosum_med_sag =  opj(CWD,
+                                   'data',
+                                   'corpus_callosum_med_sag_plane_1mm.nii.gz')
+    
+    MNI_brain_data = nib.load(MNI_brain).get_data()
+    
+    corpus_callosum_img = nib.load(corpus_callosum)
+    corpus_callosum_data = corpus_callosum_img.get_data()
+    
+    corpus_callosum_med_sag_img = nib.load(corpus_callosum_med_sag)
+    corpus_callosum_med_sag_data = corpus_callosum_med_sag_img.get_data()
+    
+    elegible_voxels_data = np.zeros((corpus_callosum_data.shape))
+
+    x, y, z = np.where(corpus_callosum_med_sag_data==1)
+    med_sag_data_idx = np.array([[x, y, z] for x, y, z in zip(x, y, z)])
+    
+    x, y, z = np.where(MNI_brain_data==1)
+    MNI_brain_data_idx = np.array([[x, y, z] for x, y, z in zip(x, y, z)])
+    
+    for point in MNI_brain_data_idx:  # for each point
+        
+        # if already is in elegible voxels, continue
+        # if point is in elegible_voxels_data:
+        #     continue
+        
+        closest = closest_node(point, med_sag_data_idx)
+        
+        intermediate_points = bresenhamline(np.atleast_2d(point),
+                                            closest)
+
+        if any intermediate_points in not_corpus_callosum:
+            continue
+        else:
+            elegible_voxels_data[point] = 1
+
+
+
+    elegible_voxels_img = nib.Nifti1Image(elegible_voxels_data,
+                                          affine=corpus_callosum_img.affine)
+
+    nib.save(elegible_voxels_img, opj(CWD,
+                                      'data',
+                                      'elegible_voxels_1mm.nii.gz'))
 
 
 
