@@ -52,13 +52,12 @@ def create_corpus_callosum_plane():
 
     # mid plane-1 to fit with MNI(x)=0
     mid_sag_plane = (corpus_callosum_data.shape[0]//2)-1
-    # Genu of Corpus Callosum
+
     corpus_callosum_med_sag_plane[mid_sag_plane,:,:] = corpus_callosum_data[mid_sag_plane,:,:]
 
     corpus_callosum_med_sag_plane_img = nib.Nifti1Image(corpus_callosum_med_sag_plane,
                                                         affine=corpus_callosum_img.affine)
 
-    plot_glass_brain(corpus_callosum_med_sag_plane_img)
     nib.save(corpus_callosum_med_sag_plane_img, opj(CWD,
                                                     'data',
                                                     'corpus_callosum_med_sag_plane_1mm.nii.gz'))    
