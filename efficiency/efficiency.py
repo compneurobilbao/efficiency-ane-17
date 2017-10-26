@@ -7,6 +7,8 @@ import numpy as np
 import os
 from os.path import join as opj
 
+from scipy.spatial.distance import cdist
+
 from efficiency.utils import (execute,
                               closest_node,
                               bresenhamline,
@@ -140,67 +142,41 @@ def transform_mask_to_subject_space(mask_path=MASK_PATH,
 crossing CC mask
 """
 
+def find_optimal_cc_crossing(point_1, point_2, area):
+    """
+    Function to calculate the optimal point of cut between 2 points given the
+    constraint of having to cross an area of points.
 
-def create_skeleton_atlas():
-    # Just area/surface that actually can be passed trough
-    # TODO: This is more difficult than I though
+    Returns min_distance and optimal_point
     
-    # This would be faster if we only had a mask of outer brain voxels
-    
-    # For each point of the MNI atlas mask, calculate the min distance to 
-    # CC_med_sag_plane. Create a line of points between the points and check 
-    # for points that in CC x,y,z boundaries, fall out of CC.
-
-
+    Example:
+        
     # JHU DTI-based white-matter atlases
-    MNI_brain = '/usr/share/fsl/5.0/data/standard/MNI152_T1_1mm_brain_mask.nii.gz'
-    corpus_callosum =  opj(CWD,
-                           'data',
-                           'corpus_callosum_1mm.nii.gz')
     corpus_callosum_med_sag =  opj(CWD,
                                    'data',
                                    'corpus_callosum_med_sag_plane_1mm.nii.gz')
-    
-    MNI_brain_data = nib.load(MNI_brain).get_data()
-    
-    corpus_callosum_img = nib.load(corpus_callosum)
-    corpus_callosum_data = corpus_callosum_img.get_data()
-    
+        
     corpus_callosum_med_sag_img = nib.load(corpus_callosum_med_sag)
-    corpus_callosum_med_sag_data = corpus_callosum_med_sag_img.get_data()
+    area = corpus_callosum_med_sag_img.get_data()
     
-    elegible_voxels_data = np.zeros((corpus_callosum_data.shape))
-
-    x, y, z = np.where(corpus_callosum_med_sag_data==1)
-    med_sag_data_idx = np.array([[x, y, z] for x, y, z in zip(x, y, z)])
+    point_1 = np.array([24, 45, 45])
+    point_2 =  np.array([120, 90, 90])
     
-    x, y, z = np.where(MNI_brain_data==1)
-    MNI_brain_data_idx = np.array([[x, y, z] for x, y, z in zip(x, y, z)])
-    
-    for point in MNI_brain_data_idx:  # for each point
-        
-        # if already is in elegible voxels, continue
-        # if point is in elegible_voxels_data:
-        #     continue
-        
-        closest = closest_node(point, med_sag_data_idx)
-        
-        intermediate_points = bresenhamline(np.atleast_2d(point),
-                                            closest)
+    >>> find_optimal_cc_crossing(point_1, point_2, area)
+    >>> (116.58400271916257, array([90, 84, 81]))
+    """
 
-        if any intermediate_points in not_corpus_callosum:
-            continue
-        else:
-            elegible_voxels_data[point] = 1
+    x, y, z = np.where(area == 1)
+    area_points = np.array([[x, y, z] for x, y, z in zip(x, y, z)])
 
+    # Calculating all options (it is expected not the be much area),
+    # and find the minimum.
+    distances = [cdist([area_point], [point_1]) +
+                 cdist([area_point], [point_2])
+                 for area_point in area_points]
 
+    min_distance = float(min(distances))
+    optimal_point = area_points[argmin(distances)]
 
-    elegible_voxels_img = nib.Nifti1Image(elegible_voxels_data,
-                                          affine=corpus_callosum_img.affine)
-
-    nib.save(elegible_voxels_img, opj(CWD,
-                                      'data',
-                                      'elegible_voxels_1mm.nii.gz'))
-
-
+    return min_distance, optimal_point
 
